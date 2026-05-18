@@ -5,6 +5,13 @@
 
 // ─── Timing ──────────────────────────────────────────────────────────────────
 
+function positiveIntegerFromEnv(name: string, fallback: number): number {
+  const raw = process.env[name]
+  if (!raw) return fallback
+  const value = Number.parseInt(raw, 10)
+  return Number.isInteger(value) && value > 0 ? value : fallback
+}
+
 /** How long to wait before declaring a session inactive (ms).
  *  Claude can think for several minutes with extended thinking,
  *  so this needs to be generous to avoid false "completed" state. */
@@ -28,7 +35,7 @@ export const PERMISSION_DETECT_MS = 5000
  *  refresh their mtime and are picked up by the next scan tick
  *  (SCAN_INTERVAL_MS). A user resuming a long-idle session should see it
  *  attach within ~1s of their next message. */
-export const ACTIVE_SESSION_AGE_S = 10 * 60 // 10 minutes
+export const ACTIVE_SESSION_AGE_S = positiveIntegerFromEnv('AGENT_FLOW_ACTIVE_SESSION_AGE_S', 10 * 60) // default: 10 minutes
 
 /** Duration of VS Code status bar messages (ms) */
 export const STATUS_MESSAGE_DURATION_MS = 5000
