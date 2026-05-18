@@ -494,16 +494,18 @@ export async function createRelay(options: RelayOptions): Promise<Relay> {
         sendSSE(res, { type: 'session-list', sessions: sessionList })
       }
 
-      // Replay buffered events for the most recent active session
+      // Replay buffered events for every known session. The web bridge buffers
+      // by sessionId, so this lets users switch to older active/completed
+      // sessions after refreshing or opening the UI late.
       const sorted = [...sessionList].sort((a, b) => {
         const aActive = a.status === 'active' ? 1 : 0
         const bActive = b.status === 'active' ? 1 : 0
         if (aActive !== bActive) return bActive - aActive
         return b.lastActivityTime - a.lastActivityTime
       })
-      if (sorted.length > 0) {
-        const buffered = eventBuffer.get(sorted[0].id)
-        if (buffered) {
+      for (const session of sorted) {
+        const buffered = eventBuffer.get(session.id)
+        if (buffered?.length) {
           sendSSE(res, { type: 'agent-event-batch', events: buffered })
         }
       }

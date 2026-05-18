@@ -7,8 +7,16 @@ import * as http from 'http'
 import { createRelay } from './relay'
 import { DEFAULT_RELAY_PORT, DEV_WEB_ORIGIN_PATTERN } from '../extension/src/constants'
 
+function resolveRelayPort(): number {
+  const raw = process.env.AGENT_FLOW_RELAY_PORT || process.env.NEXT_PUBLIC_RELAY_PORT
+  if (!raw) return DEFAULT_RELAY_PORT
+  const port = Number.parseInt(raw, 10)
+  return Number.isInteger(port) && port > 0 && port < 65536 ? port : DEFAULT_RELAY_PORT
+}
+
 async function main() {
   const workspace = process.argv[2] || process.cwd()
+  const relayPort = resolveRelayPort()
 
   console.log('Starting Agent Flow dev relay...\n')
   console.log(`Workspace: ${workspace}`)
@@ -40,8 +48,8 @@ async function main() {
     res.end('Agent Flow Dev Relay')
   })
 
-  server.listen(DEFAULT_RELAY_PORT, '127.0.0.1', () => {
-    console.log(`\nSSE relay on http://127.0.0.1:${DEFAULT_RELAY_PORT}/events`)
+  server.listen(relayPort, '127.0.0.1', () => {
+    console.log(`\nSSE relay on http://127.0.0.1:${relayPort}/events`)
     console.log('Ready! Events will appear in the web app.')
   })
 
