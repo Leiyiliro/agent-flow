@@ -7,7 +7,8 @@ const { spawn, spawnSync } = require('child_process')
 const WEB_PORT = '37417'
 const RELAY_PORT = '37418'
 const PNPM = 'pnpm'
-const WORKSPACE = process.argv[2] || path.resolve(process.cwd(), '..')
+const cliArgs = process.argv.slice(2).filter(arg => arg !== '--')
+const WORKSPACE = cliArgs[0] || path.resolve(process.cwd(), '..')
 
 const env = {
   ...process.env,
